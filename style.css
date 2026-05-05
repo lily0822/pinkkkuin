@@ -439,14 +439,15 @@ input:checked + .slider:before {
 .badge-container {
     display: flex;
     gap: 0.5rem;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    white-space: nowrap;
 }
 
 .badge-li {
     background-color: #fbcfe8;
     color: #9d174d;
     padding: 0.25rem 0.75rem;
-    border-radius: 9999px; /* 橢圓長方形 */
+    border-radius: 8px; /* 圓弧狀長方形 */
     font-weight: 600;
     font-size: 0.75rem;
     display: inline-block;
@@ -466,7 +467,28 @@ input:checked + .slider:before {
     background-color: var(--surface-hover);
     color: var(--text-primary);
     padding: 0.25rem 0.75rem;
-    border-radius: 4px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    display: inline-block;
+}
+
+/* Organizer Badges */
+.badge-ark {
+    background-color: #dcfce7; /* Light green */
+    color: #14532d; /* Dark green text */
+    padding: 0.25rem 0.75rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    display: inline-block;
+}
+
+.badge-zaiyue {
+    background-color: #dbeafe; /* Light blue */
+    color: #1e3a8a; /* Dark blue text */
+    padding: 0.25rem 0.75rem;
+    border-radius: 8px;
+    font-weight: 600;
     font-size: 0.75rem;
     display: inline-block;
 }

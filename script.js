@@ -55,6 +55,8 @@ const closeModalBtn = document.getElementById('closeModalBtn');
 const cancelBtn = document.getElementById('cancelBtn');
 const addForm = document.getElementById('addForm');
 
+const searchBtn = document.getElementById('searchBtn');
+
 // Filter Selects
 const filterMonth = document.getElementById('filterMonth');
 const filterOrganizer = document.getElementById('filterOrganizer');
@@ -87,6 +89,17 @@ function formatBadges(val) {
     return html;
 }
 
+// Format Organizer into styled badges
+function formatOrganizer(val) {
+    if (!val) return '';
+    if (val.includes('方舟')) {
+        return `<span class="badge-ark">${val}</span>`;
+    } else if (val.includes('再約')) {
+        return `<span class="badge-zaiyue">${val}</span>`;
+    }
+    return `<span class="badge-default">${val}</span>`;
+}
+
 // Populate Filters dynamically from data
 function populateFilters() {
     const months = new Set();
@@ -102,13 +115,15 @@ function populateFilters() {
     });
 
     // Helper to add options
-    const addOptions = (selectElem, set) => {
-        // Keep the first "All" option
+    const addOptions = (selectElem, set, reverse = false) => {
         const firstOption = selectElem.options[0];
         selectElem.innerHTML = '';
         selectElem.appendChild(firstOption);
         
-        Array.from(set).sort().forEach(val => {
+        let arr = Array.from(set).sort();
+        if (reverse) arr.reverse();
+        
+        arr.forEach(val => {
             if (!val) return;
             const opt = document.createElement('option');
             opt.value = val;
@@ -117,7 +132,7 @@ function populateFilters() {
         });
     };
 
-    addOptions(filterMonth, months);
+    addOptions(filterMonth, months, true); // Reverse sort for months
     addOptions(filterOrganizer, organizers);
     addOptions(filterLocation, locations);
     addOptions(filterParticipants, participants);
@@ -183,7 +198,7 @@ function renderTable(data) {
             <td>${row.month || ''}</td>
             <td>${row.startDate || ''}</td>
             <td>${row.endDate || ''}</td>
-            <td>${row.organizer || ''}</td>
+            <td>${formatOrganizer(row.organizer)}</td>
             <td>${row.location || ''}</td>
             <td>${formatBadges(row.participants)}</td>
             <td>${row.stallCount || ''}</td>
@@ -192,7 +207,6 @@ function renderTable(data) {
             <td style="text-align: center;">${formatBooleanIcon(row.isPaid)}</td>
             <td>${formatBadges(row.payer)}</td>
             <td style="text-align: center;">${formatBooleanIcon(row.isCleared)}</td>
-            <td>${row.remarks || ''}</td>
             <td>
                 <div class="action-btns">
                     <button class="btn-icon btn-edit" onclick="window.openEditModal(${actualIndex})" title="編輯">
@@ -203,22 +217,19 @@ function renderTable(data) {
                     </button>
                 </div>
             </td>
+            <td>${row.remarks || ''}</td>
         `;
         tableBody.appendChild(tr);
     });
 }
 
-// Update View completely
+// Update View
 function updateView() {
-    populateFilters();
     renderTable(getFilteredData());
 }
 
-// Event Listeners for Filters
-filterMonth.addEventListener('change', updateView);
-filterOrganizer.addEventListener('change', updateView);
-filterLocation.addEventListener('change', updateView);
-filterParticipants.addEventListener('change', updateView);
+// Event Listeners for Actions
+if (searchBtn) searchBtn.addEventListener('click', updateView);
 sortBtn.addEventListener('click', sortData);
 
 // Format date to YYYY-MM-DD for input[type="date"]
@@ -335,4 +346,5 @@ addForm.addEventListener('submit', (e) => {
 });
 
 // Initial load
+populateFilters();
 updateView();
