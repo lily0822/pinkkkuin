@@ -20,13 +20,40 @@
             </div>
             
             <div class="header-actions">
-                <div class="search-container">
-                    <i class="fa-solid fa-search search-icon"></i>
-                    <input type="text" id="searchInput" placeholder="搜尋主辦、地點、備註...">
+                <div class="filters-container">
+                    <div class="filter-group">
+                        <label for="filterMonth">擺攤月份</label>
+                        <select id="filterMonth">
+                            <option value="">全部</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="filterOrganizer">主辦單位</label>
+                        <select id="filterOrganizer">
+                            <option value="">全部</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="filterLocation">地點</label>
+                        <select id="filterLocation">
+                            <option value="">全部</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="filterParticipants">參與者</label>
+                        <select id="filterParticipants">
+                            <option value="">全部</option>
+                        </select>
+                    </div>
                 </div>
-                <button id="addBtn" class="btn btn-primary">
-                    <i class="fa-solid fa-plus"></i> 新增紀錄
-                </button>
+                <div class="btn-group">
+                    <button id="sortBtn" class="btn btn-secondary">
+                        <i class="fa-solid fa-sort"></i> 排序資料
+                    </button>
+                    <button id="addBtn" class="btn btn-primary">
+                        <i class="fa-solid fa-plus"></i> 新增紀錄
+                    </button>
+                </div>
             </div>
         </header>
 
@@ -48,6 +75,7 @@
                             <th>付費者</th>
                             <th>是否結清</th>
                             <th>備註</th>
+                            <th>操作</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody">
@@ -66,7 +94,7 @@
     <div id="addModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2><i class="fa-solid fa-file-circle-plus"></i> 新增擺攤紀錄</h2>
+                <h2 id="modalTitle"><i class="fa-solid fa-file-circle-plus"></i> 新增擺攤紀錄</h2>
                 <button class="close-btn" id="closeModalBtn"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <form id="addForm">

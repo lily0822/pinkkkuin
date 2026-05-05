@@ -1,5 +1,5 @@
 // Initialize data from Google Sheet or LocalStorage
-let marketData = JSON.parse(localStorage.getItem('marketData')) || [
+const defaultData = [
     { month: "2025/04", startDate: "2025/4/3", endDate: "2025/4/4", organizer: "", location: "北車地下街", participants: "麗", stallCount: 1, totalAmount: 2400, amountPerStall: 2400, isPaid: true, payer: "麗", isCleared: true, remarks: "" },
     { month: "2025/04", startDate: "2025/4/5", endDate: "2025/4/6", organizer: "", location: "北車地下街", participants: "麗+牛", stallCount: 1, totalAmount: 2400, amountPerStall: 2400, isPaid: true, payer: "麗", isCleared: true, remarks: "" },
     { month: "2025/04", startDate: "2025/4/26", endDate: "2025/4/26", organizer: "", location: "龍山寺", participants: "麗", stallCount: 1, totalAmount: 1800, amountPerStall: 1800, isPaid: true, payer: "牛", isCleared: true, remarks: "" },
@@ -38,28 +38,127 @@ let marketData = JSON.parse(localStorage.getItem('marketData')) || [
     { month: "2026/10", startDate: "2026/10/8", endDate: "2026/10/11", organizer: "方舟市集", location: "華山", participants: "麗+牛", stallCount: 2, totalAmount: 27000, amountPerStall: 13500, isPaid: false, payer: "麗", isCleared: false, remarks: "" }
 ];
 
-// Save initial data to localStorage if not exists
-if (!localStorage.getItem('marketData')) {
-    localStorage.setItem('marketData', JSON.stringify(marketData));
-}
+let marketData = JSON.parse(localStorage.getItem('marketData')) || defaultData;
+let editingIndex = -1; // -1 means adding new, otherwise editing
+let sortAscending = true;
 
 // DOM Elements
 const tableBody = document.getElementById('tableBody');
-const searchInput = document.getElementById('searchInput');
 const noResults = document.getElementById('noResults');
 const dataTable = document.getElementById('dataTable');
 
 const addModal = document.getElementById('addModal');
+const modalTitle = document.getElementById('modalTitle');
 const addBtn = document.getElementById('addBtn');
+const sortBtn = document.getElementById('sortBtn');
 const closeModalBtn = document.getElementById('closeModalBtn');
 const cancelBtn = document.getElementById('cancelBtn');
 const addForm = document.getElementById('addForm');
 
-// Helper to format boolean to badge
-function formatBoolean(val) {
-    if (val === true) return `<span class="status-badge status-true">TRUE</span>`;
-    if (val === false) return `<span class="status-badge status-false">FALSE</span>`;
+// Filter Selects
+const filterMonth = document.getElementById('filterMonth');
+const filterOrganizer = document.getElementById('filterOrganizer');
+const filterLocation = document.getElementById('filterLocation');
+const filterParticipants = document.getElementById('filterParticipants');
+
+// Format Boolean to Icon
+function formatBooleanIcon(val) {
+    if (val === true) return `<i class="fa-solid fa-check" style="color: #10b981; font-size: 1.25rem;"></i>`;
+    if (val === false) return `<i class="fa-solid fa-xmark" style="color: #ef4444; font-size: 1.25rem;"></i>`;
     return '';
+}
+
+// Format participants/payer names into styled badges
+function formatBadges(val) {
+    if (!val) return '';
+    const parts = val.split('+');
+    let html = '<div class="badge-container">';
+    parts.forEach(part => {
+        let p = part.trim();
+        if (p === '麗') {
+            html += `<span class="badge-li">麗</span>`;
+        } else if (p === '牛') {
+            html += `<span class="badge-niu">牛</span>`;
+        } else if (p) {
+            html += `<span class="badge-default">${p}</span>`;
+        }
+    });
+    html += '</div>';
+    return html;
+}
+
+// Populate Filters dynamically from data
+function populateFilters() {
+    const months = new Set();
+    const organizers = new Set();
+    const locations = new Set();
+    const participants = new Set();
+
+    marketData.forEach(row => {
+        if (row.month) months.add(row.month);
+        if (row.organizer) organizers.add(row.organizer);
+        if (row.location) locations.add(row.location);
+        if (row.participants) participants.add(row.participants);
+    });
+
+    // Helper to add options
+    const addOptions = (selectElem, set) => {
+        // Keep the first "All" option
+        const firstOption = selectElem.options[0];
+        selectElem.innerHTML = '';
+        selectElem.appendChild(firstOption);
+        
+        Array.from(set).sort().forEach(val => {
+            if (!val) return;
+            const opt = document.createElement('option');
+            opt.value = val;
+            opt.textContent = val;
+            selectElem.appendChild(opt);
+        });
+    };
+
+    addOptions(filterMonth, months);
+    addOptions(filterOrganizer, organizers);
+    addOptions(filterLocation, locations);
+    addOptions(filterParticipants, participants);
+}
+
+// Apply filters
+function getFilteredData() {
+    const fMonth = filterMonth.value;
+    const fOrg = filterOrganizer.value;
+    const fLoc = filterLocation.value;
+    const fPart = filterParticipants.value;
+
+    return marketData.filter(row => {
+        const mMatch = !fMonth || row.month === fMonth;
+        const oMatch = !fOrg || row.organizer === fOrg;
+        const lMatch = !fLoc || row.location === fLoc;
+        const pMatch = !fPart || row.participants === fPart;
+        return mMatch && oMatch && lMatch && pMatch;
+    });
+}
+
+// Sort Data
+function sortData() {
+    sortAscending = !sortAscending;
+    marketData.sort((a, b) => {
+        const dateA = new Date(a.startDate);
+        const dateB = new Date(b.startDate);
+        return sortAscending ? dateA - dateB : dateB - dateA;
+    });
+    
+    // Update button icon
+    const icon = sortBtn.querySelector('i');
+    if (sortAscending) {
+        icon.className = 'fa-solid fa-sort-up';
+    } else {
+        icon.className = 'fa-solid fa-sort-down';
+    }
+    
+    // Save order
+    localStorage.setItem('marketData', JSON.stringify(marketData));
+    updateView();
 }
 
 // Render Table
@@ -75,7 +174,10 @@ function renderTable(data) {
     dataTable.classList.remove('hidden');
     noResults.classList.add('hidden');
 
-    data.forEach(row => {
+    data.forEach((row, filteredIndex) => {
+        // Find actual index in marketData for edit/delete
+        const actualIndex = marketData.indexOf(row);
+        
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td>${row.month || ''}</td>
@@ -83,38 +185,76 @@ function renderTable(data) {
             <td>${row.endDate || ''}</td>
             <td>${row.organizer || ''}</td>
             <td>${row.location || ''}</td>
-            <td>${row.participants || ''}</td>
+            <td>${formatBadges(row.participants)}</td>
             <td>${row.stallCount || ''}</td>
             <td>${row.totalAmount !== null ? row.totalAmount : ''}</td>
             <td>${row.amountPerStall !== null ? row.amountPerStall : ''}</td>
-            <td>${formatBoolean(row.isPaid)}</td>
-            <td>${row.payer || ''}</td>
-            <td>${formatBoolean(row.isCleared)}</td>
+            <td style="text-align: center;">${formatBooleanIcon(row.isPaid)}</td>
+            <td>${formatBadges(row.payer)}</td>
+            <td style="text-align: center;">${formatBooleanIcon(row.isCleared)}</td>
             <td>${row.remarks || ''}</td>
+            <td>
+                <div class="action-btns">
+                    <button class="btn-icon btn-edit" onclick="window.openEditModal(${actualIndex})" title="編輯">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
+                    <button class="btn-icon btn-delete" onclick="window.deleteRecord(${actualIndex})" title="刪除">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            </td>
         `;
         tableBody.appendChild(tr);
     });
 }
 
-// Initial render
-renderTable(marketData);
+// Update View completely
+function updateView() {
+    populateFilters();
+    renderTable(getFilteredData());
+}
 
-// Search functionality
-searchInput.addEventListener('input', (e) => {
-    const searchTerm = e.target.value.toLowerCase();
-    
-    const filteredData = marketData.filter(row => {
-        return Object.values(row).some(value => {
-            if (value === null || value === undefined) return false;
-            return String(value).toLowerCase().includes(searchTerm);
-        });
-    });
-    
-    renderTable(filteredData);
-});
+// Event Listeners for Filters
+filterMonth.addEventListener('change', updateView);
+filterOrganizer.addEventListener('change', updateView);
+filterLocation.addEventListener('change', updateView);
+filterParticipants.addEventListener('change', updateView);
+sortBtn.addEventListener('click', sortData);
+
+// Format date to YYYY-MM-DD for input[type="date"]
+function formatDateForInput(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '';
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${d.getFullYear()}-${m}-${day}`;
+}
 
 // Modal toggle functions
-function openModal() {
+function openModal(isEdit = false, index = -1) {
+    editingIndex = index;
+    if (isEdit) {
+        modalTitle.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> 編輯擺攤紀錄';
+        const row = marketData[index];
+        document.getElementById('month').value = row.month || '';
+        document.getElementById('startDate').value = formatDateForInput(row.startDate);
+        document.getElementById('endDate').value = formatDateForInput(row.endDate);
+        document.getElementById('organizer').value = row.organizer || '';
+        document.getElementById('location').value = row.location || '';
+        document.getElementById('participants').value = row.participants || '';
+        document.getElementById('stallCount').value = row.stallCount || 1;
+        document.getElementById('totalAmount').value = row.totalAmount || 0;
+        document.getElementById('amountPerStall').value = row.amountPerStall || 0;
+        document.getElementById('isPaid').checked = !!row.isPaid;
+        document.getElementById('payer').value = row.payer || '';
+        document.getElementById('isCleared').checked = !!row.isCleared;
+        document.getElementById('remarks').value = row.remarks || '';
+    } else {
+        modalTitle.innerHTML = '<i class="fa-solid fa-file-circle-plus"></i> 新增擺攤紀錄';
+        addForm.reset();
+    }
+    
     addModal.classList.add('active');
     document.body.style.overflow = 'hidden';
 }
@@ -123,18 +263,31 @@ function closeModal() {
     addModal.classList.remove('active');
     document.body.style.overflow = '';
     addForm.reset();
+    editingIndex = -1;
 }
 
-addBtn.addEventListener('click', openModal);
+addBtn.addEventListener('click', () => openModal(false));
 closeModalBtn.addEventListener('click', closeModal);
 cancelBtn.addEventListener('click', closeModal);
 
-// Close modal on outside click
 addModal.addEventListener('click', (e) => {
     if (e.target === addModal) {
         closeModal();
     }
 });
+
+// Global functions for inline HTML event handlers
+window.deleteRecord = function(index) {
+    if (confirm('確定要刪除這筆紀錄嗎？')) {
+        marketData.splice(index, 1);
+        localStorage.setItem('marketData', JSON.stringify(marketData));
+        updateView();
+    }
+};
+
+window.openEditModal = function(index) {
+    openModal(true, index);
+};
 
 // Handle form submission
 addForm.addEventListener('submit', (e) => {
@@ -163,18 +316,23 @@ addForm.addEventListener('submit', (e) => {
         remarks: document.getElementById('remarks').value
     };
     
-    // Add to data array
-    marketData.push(newRecord);
+    if (editingIndex > -1) {
+        // Update existing
+        marketData[editingIndex] = newRecord;
+    } else {
+        // Add new
+        marketData.push(newRecord);
+    }
     
     // Save to localStorage
     localStorage.setItem('marketData', JSON.stringify(marketData));
     
     // Re-render table
-    renderTable(marketData);
-    
-    // Clear search input
-    searchInput.value = '';
+    updateView();
     
     // Close modal
     closeModal();
 });
+
+// Initial load
+updateView();

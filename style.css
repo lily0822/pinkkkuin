@@ -81,23 +81,27 @@ body {
     align-items: center;
 }
 
-/* Search Bar */
-.search-container {
-    position: relative;
-    width: 300px;
+/* Filters */
+.filters-container {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
 }
 
-.search-icon {
-    position: absolute;
-    left: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.filter-group label {
+    font-size: 0.75rem;
     color: var(--text-secondary);
+    font-weight: 500;
 }
 
-.search-container input {
-    width: 100%;
-    padding: 0.625rem 1rem 0.625rem 2.5rem;
+.filter-group select {
+    padding: 0.5rem 1rem;
     background-color: rgba(15, 23, 42, 0.6);
     border: 1px solid var(--border-color);
     border-radius: 0.5rem;
@@ -105,12 +109,20 @@ body {
     font-family: inherit;
     font-size: 0.875rem;
     transition: all 0.3s ease;
+    cursor: pointer;
+    min-width: 120px;
 }
 
-.search-container input:focus {
+.filter-group select:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.btn-group {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-end;
 }
 
 /* Buttons */
@@ -190,7 +202,7 @@ tbody tr {
 }
 
 tbody tr:hover {
-    background-color: rgba(59, 130, 246, 0.05);
+    background-color: rgba(96, 165, 250, 0.15);
 }
 
 td {
@@ -423,6 +435,70 @@ input:checked + .slider:before {
     gap: 1rem;
 }
 
+/* Participant Badges */
+.badge-container {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.badge-li {
+    background-color: #fbcfe8;
+    color: #9d174d;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px; /* 橢圓長方形 */
+    font-weight: 600;
+    font-size: 0.75rem;
+    display: inline-block;
+}
+
+.badge-niu {
+    background-color: #bbf7d0;
+    color: #166534;
+    padding: 0.25rem 0.75rem;
+    border-radius: 8px; /* 圓弧狀長方形 */
+    font-weight: 600;
+    font-size: 0.75rem;
+    display: inline-block;
+}
+
+.badge-default {
+    background-color: var(--surface-hover);
+    color: var(--text-primary);
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    display: inline-block;
+}
+
+/* Action Buttons */
+.action-btns {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    color: var(--text-secondary);
+    transition: color 0.2s, transform 0.1s;
+    padding: 0.25rem;
+}
+
+.btn-icon:hover {
+    transform: scale(1.1);
+}
+
+.btn-edit:hover {
+    color: var(--primary-color);
+}
+
+.btn-delete:hover {
+    color: var(--danger-color);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .app-header {
@@ -433,14 +509,20 @@ input:checked + .slider:before {
     
     .header-actions {
         flex-direction: column;
+        align-items: flex-start;
     }
     
-    .search-container {
+    .filters-container {
+        width: 100%;
+        flex-direction: column;
+    }
+    
+    .btn-group {
         width: 100%;
     }
     
     .btn {
-        width: 100%;
+        flex: 1;
         justify-content: center;
     }
     
