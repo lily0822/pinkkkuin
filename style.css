@@ -189,7 +189,7 @@ th {
     background-color: var(--surface-hover);
     color: var(--text-secondary);
     font-weight: 600;
-    font-size: 0.75rem;
+    font-size: 0.9rem; /* Increased from 0.75rem */
     text-transform: uppercase;
     letter-spacing: 0.05em;
     position: sticky;
@@ -228,6 +228,17 @@ td {
     background-color: rgba(239, 68, 68, 0.1);
     color: var(--danger-color);
     border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.status-toggle {
+    cursor: pointer;
+    transition: transform 0.2s ease, filter 0.2s ease;
+    display: inline-block;
+}
+
+.status-toggle:hover {
+    transform: scale(1.2);
+    filter: brightness(1.2);
 }
 
 .no-results {

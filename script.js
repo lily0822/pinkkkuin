@@ -63,11 +63,11 @@ const filterOrganizer = document.getElementById('filterOrganizer');
 const filterLocation = document.getElementById('filterLocation');
 const filterParticipants = document.getElementById('filterParticipants');
 
-// Format Boolean to Icon
-function formatBooleanIcon(val) {
-    if (val === true) return `<i class="fa-solid fa-check" style="color: #10b981; font-size: 1.25rem;"></i>`;
-    if (val === false) return `<i class="fa-solid fa-xmark" style="color: #ef4444; font-size: 1.25rem;"></i>`;
-    return '';
+// Format Boolean to Clickable Toggle Icon
+function formatToggleIcon(val, index, field) {
+    let icon = val ? `<i class="fa-solid fa-check" style="color: #10b981; font-size: 1.25rem;"></i>` 
+                   : `<i class="fa-solid fa-xmark" style="color: #ef4444; font-size: 1.25rem;"></i>`;
+    return `<div class="status-toggle" onclick="window.toggleStatus(${index}, '${field}')">${icon}</div>`;
 }
 
 // Format participants/payer names into styled badges
@@ -204,9 +204,9 @@ function renderTable(data) {
             <td>${row.stallCount || ''}</td>
             <td>${row.totalAmount !== null ? row.totalAmount : ''}</td>
             <td>${row.amountPerStall !== null ? row.amountPerStall : ''}</td>
-            <td style="text-align: center;">${formatBooleanIcon(row.isPaid)}</td>
+            <td style="text-align: center;">${formatToggleIcon(row.isPaid, actualIndex, 'isPaid')}</td>
             <td>${formatBadges(row.payer)}</td>
-            <td style="text-align: center;">${formatBooleanIcon(row.isCleared)}</td>
+            <td style="text-align: center;">${formatToggleIcon(row.isCleared, actualIndex, 'isCleared')}</td>
             <td>
                 <div class="action-btns">
                     <button class="btn-icon btn-edit" onclick="window.openEditModal(${actualIndex})" title="編輯">
@@ -256,10 +256,7 @@ function openModal(isEdit = false, index = -1) {
         document.getElementById('participants').value = row.participants || '';
         document.getElementById('stallCount').value = row.stallCount || 1;
         document.getElementById('totalAmount').value = row.totalAmount || 0;
-        document.getElementById('amountPerStall').value = row.amountPerStall || 0;
-        document.getElementById('isPaid').checked = !!row.isPaid;
         document.getElementById('payer').value = row.payer || '';
-        document.getElementById('isCleared').checked = !!row.isCleared;
         document.getElementById('remarks').value = row.remarks || '';
     } else {
         modalTitle.innerHTML = '<i class="fa-solid fa-file-circle-plus"></i> 新增擺攤紀錄';
@@ -300,6 +297,14 @@ window.openEditModal = function(index) {
     openModal(true, index);
 };
 
+window.toggleStatus = function(index, field) {
+    if (index > -1 && index < marketData.length) {
+        marketData[index][field] = !marketData[index][field];
+        localStorage.setItem('marketData', JSON.stringify(marketData));
+        updateView();
+    }
+};
+
 // Handle form submission
 addForm.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -311,6 +316,10 @@ addForm.addEventListener('submit', (e) => {
     const fmtStart = `${startDt.getFullYear()}/${startDt.getMonth() + 1}/${startDt.getDate()}`;
     const fmtEnd = `${endDt.getFullYear()}/${endDt.getMonth() + 1}/${endDt.getDate()}`;
 
+    const stallCount = parseInt(document.getElementById('stallCount').value) || 0;
+    const totalAmount = parseInt(document.getElementById('totalAmount').value) || 0;
+    const amountPerStall = stallCount > 0 ? Math.round(totalAmount / stallCount) : 0;
+
     const newRecord = {
         month: document.getElementById('month').value,
         startDate: fmtStart,
@@ -318,12 +327,12 @@ addForm.addEventListener('submit', (e) => {
         organizer: document.getElementById('organizer').value,
         location: document.getElementById('location').value,
         participants: document.getElementById('participants').value,
-        stallCount: parseInt(document.getElementById('stallCount').value) || 0,
-        totalAmount: parseInt(document.getElementById('totalAmount').value) || 0,
-        amountPerStall: parseInt(document.getElementById('amountPerStall').value) || 0,
-        isPaid: document.getElementById('isPaid').checked,
+        stallCount: stallCount,
+        totalAmount: totalAmount,
+        amountPerStall: amountPerStall,
+        isPaid: editingIndex > -1 ? marketData[editingIndex].isPaid : false,
         payer: document.getElementById('payer').value,
-        isCleared: document.getElementById('isCleared').checked,
+        isCleared: editingIndex > -1 ? marketData[editingIndex].isCleared : false,
         remarks: document.getElementById('remarks').value
     };
     
