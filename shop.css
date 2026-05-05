@@ -1,0 +1,165 @@
+:root {
+    --bg-color: #fff0f5; /* Lavender blush, super light pink */
+    --text-primary: #5c4d5a; /* Soft dark mauve */
+    --text-secondary: #8c7a88;
+    --glass-bg: rgba(255, 255, 255, 0.65);
+    --glass-border: rgba(255, 255, 255, 0.9);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Nunito', 'Noto Sans TC', sans-serif;
+    background-color: var(--bg-color);
+    background-image: 
+        radial-gradient(at 10% 10%, rgba(255, 182, 193, 0.4) 0, transparent 50%), 
+        radial-gradient(at 90% 90%, rgba(255, 218, 185, 0.4) 0, transparent 50%);
+    background-attachment: fixed;
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.shop-container {
+    width: 100%;
+    max-width: 800px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+}
+
+.shop-header {
+    text-align: center;
+    animation: fadeInDown 0.8s ease-out;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.logo-container h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #db7093; /* Pale violet red */
+    text-shadow: 2px 2px 4px rgba(219, 112, 147, 0.2);
+    letter-spacing: 2px;
+}
+
+.shop-header p {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    letter-spacing: 2px;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    perspective: 1000px;
+}
+
+.card {
+    background: var(--glass-bg);
+    border: 2px solid var(--glass-border);
+    border-radius: 1.5rem;
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    text-decoration: none;
+    color: var(--text-primary);
+    box-shadow: 0 10px 25px rgba(255, 182, 193, 0.3);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 20px 30px rgba(255, 182, 193, 0.5);
+    background: rgba(255, 255, 255, 0.85);
+}
+
+.card-icon {
+    font-size: 2.5rem;
+    width: 80px;
+    height: 80px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    margin-bottom: 0.5rem;
+    transition: transform 0.3s ease;
+}
+
+.card:hover .card-icon {
+    transform: rotate(10deg) scale(1.1);
+}
+
+.card h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.card p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+/* Individual Card Accents */
+.pink-card:hover { border-color: #ffb6c1; }
+.pink-card .card-icon { color: #ff69b4; }
+
+.peach-card:hover { border-color: #ffdab9; }
+.peach-card .card-icon { color: #ff8c00; }
+
+.rose-card:hover { border-color: #ffc0cb; }
+.rose-card .card-icon { color: #db7093; }
+
+.purple-card:hover { border-color: #dda0dd; }
+.purple-card .card-icon { color: #ba55d3; }
+
+.shop-footer {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-top: 2rem;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .grid-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .shop-container {
+        padding: 1.5rem;
+    }
+}
